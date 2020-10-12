@@ -1,0 +1,20 @@
+version: "3.7"
+
+volumes:
+    postgres_db: {}
+
+services:
+  db:
+    image: postgres
+    volumes:
+        - postgres_db:/var/lib/postgresql/data
+    environment:
+        - POSTGRES_DB=sampledb
+        - POSTGRES_USER=sampleuser
+        - POSTGRES_PASSWORD=samplepassword
+        - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+
+  adminer:
+    image: adminer
+    ports:
+        - 28080:8080

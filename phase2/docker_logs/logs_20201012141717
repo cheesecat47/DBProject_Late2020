@@ -1,0 +1,47 @@
+Attaching to phase2_adminer_1, phase2_db_1
+[33mdb_1       |[0m 
+[33mdb_1       |[0m PostgreSQL Database directory appears to contain a database; Skipping initialization
+[33mdb_1       |[0m 
+[33mdb_1       |[0m 2020-10-12 05:17:17.960 UTC [1] LOG:  starting PostgreSQL 13.0 (Debian 13.0-1.pgdg100+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 8.3.0-6) 8.3.0, 64-bit
+[33mdb_1       |[0m 2020-10-12 05:17:17.960 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+[33mdb_1       |[0m 2020-10-12 05:17:17.960 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+[33mdb_1       |[0m 2020-10-12 05:17:17.964 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+[33mdb_1       |[0m 2020-10-12 05:17:17.969 UTC [25] LOG:  database system was shut down at 2020-10-12 05:14:10 UTC
+[33mdb_1       |[0m 2020-10-12 05:17:17.973 UTC [1] LOG:  database system is ready to accept connections
+[36madminer_1  |[0m [Mon Oct 12 05:17:17 2020] PHP 7.4.11 Development Server (http://[::]:8080) started
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50738 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50738 [403]: GET /?pgsql=localhost&username=sampleuser&db=sampledb
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50738 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50744 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50746 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50744 [200]: GET /?file=default.css&version=4.7.7
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50744 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50746 [200]: GET /?file=functions.js&version=4.7.7
+[36madminer_1  |[0m [Mon Oct 12 05:17:35 2020] [::ffff:172.24.0.1]:50746 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:37 2020] [::ffff:172.24.0.1]:50750 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:37 2020] [::ffff:172.24.0.1]:50750 [403]: GET /?pgsql=localhost&username=sampleuser&db=sampledb
+[36madminer_1  |[0m [Mon Oct 12 05:17:37 2020] [::ffff:172.24.0.1]:50750 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:37 2020] [::ffff:172.24.0.1]:50754 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:37 2020] [::ffff:172.24.0.1]:50754 [200]: GET /?file=functions.js&version=4.7.7
+[36madminer_1  |[0m [Mon Oct 12 05:17:37 2020] [::ffff:172.24.0.1]:50754 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50766 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50766 [302]: POST /?pgsql=localhost&username=sampleuser&db=sampledb
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50766 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50770 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50770 [302]: GET /?pgsql=db&username=sampleuser&db=sampledb
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50770 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50776 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50776 [200]: GET /?pgsql=db&username=sampleuser&db=sampledb&ns=public
+[36madminer_1  |[0m [Mon Oct 12 05:17:57 2020] [::ffff:172.24.0.1]:50776 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50784 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50784 [200]: GET /?pgsql=db&username=sampleuser&db=sampledb&ns=public&create=
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50784 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50790 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50794 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50790 [200]: GET /?file=plus.gif&version=4.7.7
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50790 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50794 [200]: GET /?file=cross.gif&version=4.7.7
+[36madminer_1  |[0m [Mon Oct 12 05:18:02 2020] [::ffff:172.24.0.1]:50794 Closing
+[36madminer_1  |[0m [Mon Oct 12 05:18:05 2020] [::ffff:172.24.0.1]:50800 Accepted
+[36madminer_1  |[0m [Mon Oct 12 05:18:05 2020] [::ffff:172.24.0.1]:50800 [200]: GET /?pgsql=db&username=sampleuser&db=sampledb&ns=public&view=
+[36madminer_1  |[0m [Mon Oct 12 05:18:05 2020] [::ffff:172.24.0.1]:50800 Closing
