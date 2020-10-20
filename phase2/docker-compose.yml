@@ -5,6 +5,7 @@ services:
     image: postgres
     volumes:
         - ./ddl/postgres.init.sql:/docker-entrypoint-initdb.d/init.sql
+        - ./query:/query
     environment:
         - POSTGRES_USER=team9
         - POSTGRES_PASSWORD=dbteam9
