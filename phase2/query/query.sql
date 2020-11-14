@@ -4,13 +4,6 @@ select count(account_identity) from account where account_identity = 'customer';
 --q2
 select account_name, account_address from account where account_identity = 'manager';
 
---q3
---select a.ACCOUNT_ID, count(a.ACCOUNT_ID) 
---from account a, rating r, write_rate w 
---where a.ACCOUNT_ID = w.ACCOUNT_ID and w.RATING_NO = r.RATING_NO 
---  and 
---group by a.ACCOUNT_ID;
-
 --q4
 select count(*) from movie m, CATEGORY c 
 where m.MOVIE_REGISTER_NO = c.MOVIE_REGISTER_NO 
