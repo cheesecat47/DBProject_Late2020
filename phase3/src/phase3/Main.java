@@ -78,7 +78,7 @@ public class Main {
         // conn
         try {
             conn = DriverManager.getConnection(URL, USER, USER_PW);
-            System.out.println("Connected to the DB: " + conn);
+//            System.out.println("Connected to the DB: " + conn);
         } catch (SQLException e) {
             e.printStackTrace();
             System.err.println("Cannot get a connection: " + e.getMessage());
@@ -88,7 +88,10 @@ public class Main {
 
         try {
             conn.setAutoCommit(false);
-            stmt = conn.createStatement();
+            stmt = conn.createStatement(
+                    ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_UPDATABLE
+            );
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -96,15 +99,20 @@ public class Main {
 
     public static void closeConnDB() {
         try {
+            if (rs != null) {
+                rs.close();
+//                System.out.println("rs.close");
+            }
+
             // Close the Statement object.
             if (stmt != null) {
                 stmt.close();
-                System.out.println("stmt.close");
+//                System.out.println("stmt.close");
             }
             // Close the Connection object.
             if (conn != null) {
                 conn.close();
-                System.out.println("conn.close");
+//                System.out.println("conn.close");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -255,8 +263,36 @@ public class Main {
         System.out.println();
 
         while (loginInfo != null && loginInfo.isStatus()) {
-            System.out.println("----------------------------------------");
-            System.out.println("A: 회원 번호 수정 / B: 비밀 번호 수정 / C: 회원 탈퇴 / 기타: 로그 아웃");
+            System.out.println("-------------------- ID: " + loginInfo.getId() + " --------------------");
+            System.out.println("A: 회원 관련 기능 / B: 영상물 관련 기능 / 기타: 로그 아웃");
+            System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
+
+            String op = scanner.nextLine();
+            System.out.println();
+            switch (op) {
+                case "A":
+                case "a":
+                    accountFeatures();
+                    break;
+                case "B":
+                case "b":
+                    movieFeatures();
+                    break;
+                default:
+                    System.out.println("로그아웃 합니다.");
+                    logout();
+                    return;
+            } // end switch
+            System.out.println();
+        } // end while
+    }
+
+    public static void accountFeatures(){
+        System.out.println();
+
+        while (loginInfo != null && loginInfo.isStatus()) {
+            System.out.println("-------------------- 회원 관련 기능 --------------------");
+            System.out.println("A: 회원 번호 수정 / B: 비밀 번호 수정 / C: 회원 탈퇴 / 기타: 뒤로 가기");
             System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
 
             String op = scanner.nextLine();
@@ -275,8 +311,7 @@ public class Main {
                     deleteAccount();
                     break;
                 default:
-                    System.out.println("로그아웃 합니다.");
-                    logout();
+                    System.out.println("이전 메뉴로 돌아갑니다.");
                     return;
             } // end switch
             System.out.println();
@@ -430,5 +465,266 @@ public class Main {
         }
 
         logout();
+    }
+
+    public static void movieFeatures(){
+        System.out.println();
+
+        while (loginInfo != null && loginInfo.isStatus()) {
+            System.out.println("-------------------- 영상물 관련 기능 --------------------");
+            System.out.println("A: 전체 영상물 확인 / B: 영상물 제목 검색 / C: 영상물 조건 검색 / 기타: 뒤로 가기");
+            System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
+
+            String op = scanner.nextLine();
+            System.out.println();
+            switch (op) {
+                case "A":
+                case "a":
+                    searchAllMovie();
+                    break;
+                case "B":
+                case "b":
+                    searchMovieTitle();
+                    break;
+                case "C":
+                case "c":
+                    searchMovieCond();
+                    break;
+                default:
+                    System.out.println("이전 메뉴로 돌아갑니다.");
+                    return;
+            } // end switch
+            System.out.println();
+        } // end while
+    }
+
+    public static void searchAllMovie(){
+        System.out.println("전체 영상물을 검색합니다.");
+
+        try {
+            // 2.E 고려 안 한 것. 그냥 전체 쿼리.
+            // sql = "select movie_title from movie order by movie_register_no";
+
+            // 2.E 고려 한 것. 해당 회원이 평가한 영상은 검색에서 제외.
+            sql = "select movie_register_no, movie_title from movie" +
+                    " where movie_register_no not in (" +
+                    " select movie_register_no from write_rate" +
+                    " where account_id = '" + loginInfo.getId() + "'" +
+                    ") order by movie_register_no";
+//            System.out.println("sql: " + sql);
+            rs = stmt.executeQuery(sql);
+
+            // https://wookoa.tistory.com/111
+            rs.last();
+            int rowCount = rs.getRow();
+            if (rowCount == 0){
+                System.out.println("검색된 영상물이 없습니다.");
+                System.out.println();
+                return;
+            }
+            rs.beforeFirst();
+
+            while (rs.next()) {
+                String rs1 = rs.getString(1);
+                String rs2 = rs.getString(2);
+                System.out.printf("등록번호: %s / 제목: %s\n", rs1, rs2);
+            }
+            System.out.println();
+            System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
+            System.out.println();
+
+            searchInResult(rs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    public static void searchMovieTitle(){
+        System.out.println("영상물 제목으로 검색합니다.");
+
+        try {
+            System.out.print("검색어를 입력하세요: ");
+            String movie_title = scanner.nextLine();
+
+            // 2.E 고려 한 것. 해당 회원이 평가한 영상은 검색에서 제외.
+            sql = "select movie_register_no, movie_title from movie" +
+                    " where movie_title like '%" + movie_title + "%'" +
+                    " and movie_register_no not in (" +
+                    " select movie_register_no from write_rate" +
+                    " where account_id = '" + loginInfo.getId() + "'" +
+                    ") order by movie_register_no";
+//            System.out.println("sql: " + sql);
+            rs = stmt.executeQuery(sql);
+
+            rs.last();
+            int rowCount = rs.getRow();
+            if (rowCount == 0){
+                System.out.println("검색된 영상물이 없습니다.");
+                System.out.println();
+                return;
+            }
+            rs.beforeFirst();
+
+            while (rs.next()) {
+                String rs1 = rs.getString(1);
+                String rs2 = rs.getString(2);
+                System.out.printf("등록번호: %s / 제목: %s\n", rs1, rs2);
+            }
+            System.out.println();
+            System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
+            System.out.println();
+
+            searchInResult(rs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    public static void searchMovieCond(){
+        System.out.println("영상물 조건으로 검색합니다. 입력하지 않으면 해당 조건은 검색하지 않습니다.");
+
+        try {
+            // 2.E 고려 한 것. 해당 회원이 평가한 영상은 검색에서 제외.
+            sql = "select m.movie_register_no, m.movie_title, v.version_country, v.version_name from movie m, category c, version v" +
+                    " where m.movie_register_no = c.movie_register_no" +
+                    " and m.movie_register_no = v.movie_register_no";
+
+            System.out.print("종류를 입력하세요(KnuMovieDB Original, Movie, TV Series): ");
+            String movie_type = scanner.nextLine();
+            if (!movie_type.equals("")) {
+                sql += " and m.movie_type = '" + movie_type + "'";
+            }
+
+            System.out.print("장르를 입력하세요(Action, Comedy, Romance, Drama, Thriller): ");
+            String genre_name = scanner.nextLine();
+            if (!genre_name.equals("")) {
+                sql += " and c.genre_name = '" + genre_name + "'";
+            }
+
+            System.out.print("상영 국가를 입력하세요(US, KR, IT): ");
+            String version_country = scanner.nextLine();
+            if (!version_country.equals("")) {
+                sql += " and v.version_country = '" + version_country + "'";
+            }
+
+            sql += " and m.movie_register_no not in (" +
+                    " select movie_register_no from write_rate" +
+                    " where account_id = '" + loginInfo.getId() + "'" +
+                    ") order by m.movie_register_no";
+//            System.out.println("sql: " + sql);
+
+            rs = stmt.executeQuery(sql);
+
+            rs.last();
+            int rowCount = rs.getRow();
+            if (rowCount == 0){
+                System.out.println("검색된 영상물이 없습니다.");
+                System.out.println();
+                return;
+            }
+            rs.beforeFirst();
+
+            while (rs.next()) {
+                String rs1 = rs.getString(1);
+                String rs2 = rs.getString(2);
+                String rs3 = rs.getString(3);
+                String rs4 = rs.getString(4);
+                System.out.printf("등록번호: %s / 제목: %s / 국가: %s / 버전명: %s\n", rs1, rs2, rs3, rs4);
+            }
+            System.out.println();
+            System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
+            System.out.println();
+
+            searchInResult(rs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    public static void searchInResult(ResultSet searched){
+        System.out.print("검색한 영상물 목록에서 세부 정보를 보시겠습니까(Y/N)? ");
+        String op = scanner.nextLine();
+        switch (op) {
+            case "Y":
+            case "y":
+                searchMovieDetail(searched);
+                break;
+            default:
+                return;
+        }
+    }
+
+    public static void searchMovieDetail(ResultSet searched){
+        try {
+            System.out.print("세부 정보를 보고 싶은 영상물의 등록번호를 입력해주세요: ");
+            String movie_register_no = scanner.nextLine();
+
+            searched.beforeFirst();
+            boolean isRegNoInResult = false;
+            while (searched.next()) {
+                String rs1 = rs.getString(1);
+                if (rs1.equals(movie_register_no)) {
+                    isRegNoInResult = true;
+                    break;
+                }
+            }
+            if (!isRegNoInResult) {
+                System.out.println("검색 결과 중 해당 영상물이 없습니다.");
+                return;
+            }
+            // 이제 검색 결과 중 특정 영상물 존재 확인. 그 세부 정보 출력.
+
+            String movie_detail_info = "";
+
+            sql = "select m.movie_register_no, m.movie_title, m.movie_type, m.movie_runtime, m.movie_start_year, c.genre_name" +
+                    " FROM movie m, category c" +
+                    " WHERE c.movie_register_no = m.movie_register_no" +
+                    " and m.movie_register_no = '" + movie_register_no + "'";
+//            System.out.println("sql: " + sql);
+            rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+                String rs1 = rs.getString(1);
+                String rs2 = rs.getString(2);
+                String rs3 = rs.getString(3);
+                String rs4 = rs.getString(4);
+                String rs5 = rs.getString(5);
+                String rs6 = rs.getString(6);
+                movie_detail_info += "등록번호: " + rs1;
+                movie_detail_info += " / 제목: " + rs2;
+                movie_detail_info += " / 종류: " + rs3;
+                movie_detail_info += " / 재생시간: " + rs4;
+                movie_detail_info += " / 상영년도: " + rs5;
+                movie_detail_info += " / 장르: " + rs6;
+            }
+
+            sql = "select avg(r.rating_score) as avg_rate" +
+                    " FROM write_rate w, rating r" +
+                    " WHERE w.rating_no = r.rating_no" +
+                    " and w.movie_register_no = '" + movie_register_no + "'" +
+                    " group by w.movie_register_no";
+//            System.out.println("sql: " + sql);
+            rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+                String rs1 = rs.getString(1);
+                movie_detail_info += " / 평균평점: " + rs1;
+            } else {
+                movie_detail_info += " / 평균평점: '평가가 존재하지 않습니다.'";
+            }
+
+            System.out.println(movie_detail_info);
+            System.out.println();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        }
     }
 }
