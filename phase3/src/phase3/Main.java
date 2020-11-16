@@ -41,8 +41,8 @@ public class Main {
 
         while (true) {
             System.out.println("----------------------------------------");
-            System.out.println("A: È¸¿ø °¡ÀÔ / B: ·Î±×ÀÎ / ±âÅ¸: Á¾·á");
-            System.out.print("¸Ş´º¸¦ ¼±ÅÃÇÏ¼¼¿ä(´ë¼Ò¹®ÀÚ ¸ğµÎ °¡´É) >> ");
+            System.out.println("A: íšŒì› ê°€ì… / B: ë¡œê·¸ì¸ / ê¸°íƒ€: ì¢…ë£Œ");
+            System.out.print("ë©”ë‰´ë¥¼ ì„ íƒí•˜ì„¸ìš”(ëŒ€ì†Œë¬¸ì ëª¨ë‘ ê°€ëŠ¥) >> ");
 
             String op = scanner.nextLine();
             System.out.println();
@@ -57,11 +57,11 @@ public class Main {
                     if (loginInfo.isStatus()) {
                         after_login();
                     } else {
-                        System.out.println("·Î±×ÀÎ¿¡ ½ÇÆĞÇß½À´Ï´Ù.");
+                        System.out.println("ë¡œê·¸ì¸ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
                     }
                     break;
                 default:
-                    System.out.println("ÇÁ·Î±×·¥À» Á¾·áÇÕ´Ï´Ù.");
+                    System.out.println("í”„ë¡œê·¸ë¨ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.");
 
                     scanner.close();
                     // Release database resources.
@@ -113,7 +113,7 @@ public class Main {
 
 
     public static boolean checkBdayFormat(String bday) {
-        // »ı³â¿ùÀÏ Æ÷¸Ë °Ë»ç
+        // ìƒë…„ì›”ì¼ í¬ë§· ê²€ì‚¬
         // https://coding-factory.tistory.com/529
         String bday_pattern = "^\\d{4}-\\d{2}-\\d{2}$";
         return Pattern.matches(bday_pattern, bday);
@@ -134,48 +134,48 @@ public class Main {
     }
 
     public static void signUp() {
-        System.out.println("È¸¿ø°¡ÀÔ");
-        System.out.println("* Ç¥½Ã´Â ÇÊ¼ö ÀÔ·Â »çÇ×ÀÔ´Ï´Ù.");
-        System.out.print("* ¾ÆÀÌµğ¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.println("íšŒì›ê°€ì…");
+        System.out.println("* í‘œì‹œëŠ” í•„ìˆ˜ ì…ë ¥ ì‚¬í•­ì…ë‹ˆë‹¤.");
+        System.out.print("* ì•„ì´ë””ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_id = scanner.nextLine();
-        System.out.print("* ºñ¹Ğ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("* ë¹„ë°€ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_pw = scanner.nextLine();
-        System.out.print("* ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("* ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_name = scanner.nextLine();
-        System.out.print("»ı³â¿ùÀÏÀ» ÀÔ·ÂÇÏ¼¼¿ä(yyyy-mm-dd): ");
+        System.out.print("ìƒë…„ì›”ì¼ì„ ì…ë ¥í•˜ì„¸ìš”(yyyy-mm-dd): ");
         String account_bday = scanner.nextLine();
-        System.out.print("¼ºº°À» ÀÔ·ÂÇÏ¼¼¿ä(M/F): ");
+        System.out.print("ì„±ë³„ì„ ì…ë ¥í•˜ì„¸ìš”(M/F): ");
         String account_sex = scanner.nextLine();
-        System.out.print("ÁÖ¼Ò¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ì£¼ì†Œë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_address = scanner.nextLine();
-        System.out.print("* ÀüÈ­¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä(000-0000): ");
+        System.out.print("* ì „í™”ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”(000-0000): ");
         String account_phone = scanner.nextLine();
-        System.out.print("Á÷¾÷À» ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ì§ì—…ì„ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_job = scanner.nextLine();
 
-        // ÇÊ¼ö Ç×¸ñ °Ë»ç
+        // í•„ìˆ˜ í•­ëª© ê²€ì‚¬
         if (account_id.equals("") || account_pw.equals("")
                 || account_name.equals("") || account_phone.equals("")) {
-            System.out.println("ÇÊ¼ö Ç×¸ñÀ» ÀÔ·ÂÇÏÁö ¾Ê¾Ò½À´Ï´Ù.");
+            System.out.println("í•„ìˆ˜ í•­ëª©ì„ ì…ë ¥í•˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // »ı³â¿ùÀÏ Æ÷¸Ë °Ë»ç
+        // ìƒë…„ì›”ì¼ í¬ë§· ê²€ì‚¬
         if (!checkBdayFormat(account_bday)) {
-            System.out.println("»ı³â¿ùÀÏÀ» Çü½Ä¿¡ ¸Â°Ô ÀÔ·ÂÇØÁÖ¼¼¿ä.");
+            System.out.println("ìƒë…„ì›”ì¼ì„ í˜•ì‹ì— ë§ê²Œ ì…ë ¥í•´ì£¼ì„¸ìš”.");
             return;
         }
 
-        // ¼ºº° °Ë»ç. MÀÌ³ª F°¡ ¾Æ´Ï¸é NULL ÀÔ·Â, mÀÌ³ª f¸é ´ë¹®ÀÚ·Î ¹Ù²Ù±â.
+        // ì„±ë³„ ê²€ì‚¬. Mì´ë‚˜ Fê°€ ì•„ë‹ˆë©´ NULL ì…ë ¥, mì´ë‚˜ fë©´ ëŒ€ë¬¸ìë¡œ ë°”ê¾¸ê¸°.
         account_sex = checkSex(account_sex);
 
-        // ÀüÈ­¹øÈ£ Æ÷¸Ë °Ë»ç
+        // ì „í™”ë²ˆí˜¸ í¬ë§· ê²€ì‚¬
         if (!checkPhoneFormat(account_phone)) {
-            System.out.println("ÀüÈ­¹øÈ£¸¦ Çü½Ä¿¡ ¸Â°Ô ÀÔ·ÂÇØÁÖ¼¼¿ä.");
+            System.out.println("ì „í™”ë²ˆí˜¸ë¥¼ í˜•ì‹ì— ë§ê²Œ ì…ë ¥í•´ì£¼ì„¸ìš”.");
             return;
         }
 
-        // ÇÊ¼ö ¾Æ´Ñ Ç×¸ñ ÀÔ·ÂÀ» ¾È ÇßÀ¸¸é "null"ÀÌ¶ó´Â ¹®ÀÚ¿­·Î ¹Ù²Ù±â
+        // í•„ìˆ˜ ì•„ë‹Œ í•­ëª© ì…ë ¥ì„ ì•ˆ í–ˆìœ¼ë©´ "null"ì´ë¼ëŠ” ë¬¸ìì—´ë¡œ ë°”ê¾¸ê¸°
         if (account_address.equals("")) {
             account_address = "null";
         }
@@ -184,16 +184,16 @@ public class Main {
         }
         System.out.println();
 
-        System.out.println("ÀÔ·ÂÇÏ½Å Á¤º¸ÀÔ´Ï´Ù.");
-        System.out.println("¾ÆÀÌµğ: " + account_id);
-        System.out.println("ºñ¹Ğ¹øÈ£: " + account_pw);
-        System.out.println("ÀÌ¸§: " + account_name);
-        System.out.println("»ı³â¿ùÀÏ: " + account_bday);
-        System.out.println("¼ºº°: " + account_sex);
-        System.out.println("ÁÖ¼Ò: " + account_address);
-        System.out.println("ÀüÈ­¹øÈ£: " + account_phone);
-        System.out.println("Á÷¾÷: " + account_job);
-        // ±ÇÇÑ ÀÔ·Â ¹× ¸â¹ö½Ê µî±ŞÀº È¸¿ø°¡ÀÔ ½Ã¿¡´Â Ç¥½ÃÇÏÁö ¾Ê½À´Ï´Ù.
+        System.out.println("ì…ë ¥í•˜ì‹  ì •ë³´ì…ë‹ˆë‹¤.");
+        System.out.println("ì•„ì´ë””: " + account_id);
+        System.out.println("ë¹„ë°€ë²ˆí˜¸: " + account_pw);
+        System.out.println("ì´ë¦„: " + account_name);
+        System.out.println("ìƒë…„ì›”ì¼: " + account_bday);
+        System.out.println("ì„±ë³„: " + account_sex);
+        System.out.println("ì£¼ì†Œ: " + account_address);
+        System.out.println("ì „í™”ë²ˆí˜¸: " + account_phone);
+        System.out.println("ì§ì—…: " + account_job);
+        // ê¶Œí•œ ì…ë ¥ ë° ë©¤ë²„ì‹­ ë“±ê¸‰ì€ íšŒì›ê°€ì… ì‹œì—ëŠ” í‘œì‹œí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
         System.out.println();
 
         try {
@@ -207,7 +207,7 @@ public class Main {
 
             int res = stmt.executeUpdate(sql);
             System.out.println(res + " row updated.");
-            System.out.println("È¸¿ø °¡ÀÔÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+            System.out.println("íšŒì› ê°€ì…ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -217,10 +217,10 @@ public class Main {
     }
 
     public static void logIn() {
-//        System.out.println("·Î±×ÀÎ");
-        System.out.print("¾ÆÀÌµğ¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+//        System.out.println("ë¡œê·¸ì¸");
+        System.out.print("ì•„ì´ë””ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_id = scanner.nextLine();
-        System.out.print("ºñ¹Ğ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ë¹„ë°€ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_pw = scanner.nextLine();
 
         try {
@@ -239,7 +239,7 @@ public class Main {
                 loginInfo.setPw(rs2);
                 return;
             }
-            System.out.println("¾ÆÀÌµğ ¶Ç´Â ºñ¹Ğ¹øÈ£°¡ Æ²·È½À´Ï´Ù.");
+            System.out.println("ì•„ì´ë”” ë˜ëŠ” ë¹„ë°€ë²ˆí˜¸ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤.");
             loginInfo.setStatus(false);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -251,13 +251,13 @@ public class Main {
     }
 
     public static void after_login() {
-        System.out.println("·Î±×ÀÎ¿¡ ¼º°øÇß½À´Ï´Ù.");
+        System.out.println("ë¡œê·¸ì¸ì— ì„±ê³µí–ˆìŠµë‹ˆë‹¤.");
         System.out.println();
 
         while (loginInfo != null && loginInfo.isStatus()) {
             System.out.println("----------------------------------------");
-            System.out.println("A: È¸¿ø ¹øÈ£ ¼öÁ¤ / B: ºñ¹Ğ ¹øÈ£ ¼öÁ¤ / C: È¸¿ø Å»Åğ / ±âÅ¸: ·Î±× ¾Æ¿ô");
-            System.out.print("¸Ş´º¸¦ ¼±ÅÃÇÏ¼¼¿ä(´ë¼Ò¹®ÀÚ ¸ğµÎ °¡´É) >> ");
+            System.out.println("A: íšŒì› ë²ˆí˜¸ ìˆ˜ì • / B: ë¹„ë°€ ë²ˆí˜¸ ìˆ˜ì • / C: íšŒì› íƒˆí‡´ / ê¸°íƒ€: ë¡œê·¸ ì•„ì›ƒ");
+            System.out.print("ë©”ë‰´ë¥¼ ì„ íƒí•˜ì„¸ìš”(ëŒ€ì†Œë¬¸ì ëª¨ë‘ ê°€ëŠ¥) >> ");
 
             String op = scanner.nextLine();
             System.out.println();
@@ -275,7 +275,7 @@ public class Main {
                     deleteAccount();
                     break;
                 default:
-                    System.out.println("·Î±×¾Æ¿ô ÇÕ´Ï´Ù.");
+                    System.out.println("ë¡œê·¸ì•„ì›ƒ í•©ë‹ˆë‹¤.");
                     logout();
                     return;
             } // end switch
@@ -284,59 +284,59 @@ public class Main {
     }
 
     public static void changeAccountInfo() {
-        System.out.println("È¸¿ø Á¤º¸¸¦ ¼öÁ¤ÇÕ´Ï´Ù. ÀÔ·ÂÇÏÁö ¾ÊÀ¸¸é º¯°æµÇÁö ¾Ê½À´Ï´Ù.");
-        System.out.print("ºñ¹Ğ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.println("íšŒì› ì •ë³´ë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤. ì…ë ¥í•˜ì§€ ì•Šìœ¼ë©´ ë³€ê²½ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+        System.out.print("ë¹„ë°€ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_pw = scanner.nextLine();
-        // ºñ¹Ğ¹øÈ£ Æ²¸®¸é º¯°æ ºÒ°¡
+        // ë¹„ë°€ë²ˆí˜¸ í‹€ë¦¬ë©´ ë³€ê²½ ë¶ˆê°€
         if (!loginInfo.getPw().equals(account_pw)) {
-            System.out.println("ºñ¹Ğ¹øÈ£°¡ Æ²·È½À´Ï´Ù.");
+            System.out.println("ë¹„ë°€ë²ˆí˜¸ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤.");
             return;
         }
 
         sql = "update account set ";
         ArrayList<String> toBeUpdated = new ArrayList<>();
 
-        System.out.print("ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_name = scanner.nextLine();
         if (!account_name.equals("")) {
             toBeUpdated.add("account_name = '" + account_name + "'");
         }
 
-        System.out.print("»ı³â¿ùÀÏÀ» ÀÔ·ÂÇÏ¼¼¿ä(yyyy-mm-dd): ");
+        System.out.print("ìƒë…„ì›”ì¼ì„ ì…ë ¥í•˜ì„¸ìš”(yyyy-mm-dd): ");
         String account_bday = scanner.nextLine();
         if (!account_bday.equals("")) {
-            // »ı³â¿ùÀÏ ÀÔ·ÂÇß´Âµ¥ Æ÷¸Ë ¾È ¸ÂÀ¸¸é º¯°æ ºÒ°¡
+            // ìƒë…„ì›”ì¼ ì…ë ¥í–ˆëŠ”ë° í¬ë§· ì•ˆ ë§ìœ¼ë©´ ë³€ê²½ ë¶ˆê°€
             if (!checkBdayFormat(account_bday)) {
-                System.out.println("»ı³â¿ùÀÏÀ» Çü½Ä¿¡ ¸Â°Ô ÀÔ·ÂÇØÁÖ¼¼¿ä.");
+                System.out.println("ìƒë…„ì›”ì¼ì„ í˜•ì‹ì— ë§ê²Œ ì…ë ¥í•´ì£¼ì„¸ìš”.");
                 return;
             }
             toBeUpdated.add("account_bday = TO_DATE('" + account_bday + "', 'yyyy-mm-dd')");
         }
 
-        System.out.print("¼ºº°À» ÀÔ·ÂÇÏ¼¼¿ä(M/F): ");
+        System.out.print("ì„±ë³„ì„ ì…ë ¥í•˜ì„¸ìš”(M/F): ");
         String account_sex = scanner.nextLine();
         if (!checkSex(account_sex).equals("null")) {
             toBeUpdated.add("account_sex = '" + account_sex + "'");
         }
 
-        System.out.print("ÁÖ¼Ò¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ì£¼ì†Œë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_address = scanner.nextLine();
         if (!account_address.equals("")) {
             toBeUpdated.add("account_address = '" + account_address + "'");
         }
 
-        System.out.print("ÀüÈ­¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä(000-0000): ");
+        System.out.print("ì „í™”ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”(000-0000): ");
         String account_phone = scanner.nextLine();
         if (!account_phone.equals("")) {
-            // ÀüÈ­¹øÈ£ ÀÔ·ÂÇß´Âµ¥ Æ÷¸Ë ¾È ¸ÂÀ¸¸é º¯°æ ºÒ°¡
+            // ì „í™”ë²ˆí˜¸ ì…ë ¥í–ˆëŠ”ë° í¬ë§· ì•ˆ ë§ìœ¼ë©´ ë³€ê²½ ë¶ˆê°€
             if (!checkPhoneFormat(account_phone)) {
-                System.out.println("ÀüÈ­¹øÈ£¸¦ Çü½Ä¿¡ ¸Â°Ô ÀÔ·ÂÇØÁÖ¼¼¿ä.");
+                System.out.println("ì „í™”ë²ˆí˜¸ë¥¼ í˜•ì‹ì— ë§ê²Œ ì…ë ¥í•´ì£¼ì„¸ìš”.");
                 return;
             }
             toBeUpdated.add("account_phone = '" + account_phone + "'");
         }
 
-        System.out.print("Á÷¾÷À» ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ì§ì—…ì„ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_job = scanner.nextLine();
         if (!account_job.equals("")) {
             toBeUpdated.add("account_job = '" + account_job + "'");
@@ -352,37 +352,37 @@ public class Main {
         try {
             int res = stmt.executeUpdate(sql);
             System.out.println(res + " row updated.");
-            System.out.println("È¸¿ø Á¤º¸ ¼öÁ¤ÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+            System.out.println("íšŒì› ì •ë³´ ìˆ˜ì •ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("È¸¿ø Á¤º¸ ¼öÁ¤ Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.");
+            System.err.println("íšŒì› ì •ë³´ ìˆ˜ì • ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.");
         }
     }
 
     public static void changeAccountPW() {
-        System.out.println("ºñ¹Ğ ¹øÈ£¸¦ ¼öÁ¤ÇÕ´Ï´Ù. ÀÔ·ÂÇÏÁö ¾ÊÀ¸¸é º¯°æµÇÁö ¾Ê½À´Ï´Ù.");
-        System.out.print("ÇöÀç ºñ¹Ğ ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.println("ë¹„ë°€ ë²ˆí˜¸ë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤. ì…ë ¥í•˜ì§€ ì•Šìœ¼ë©´ ë³€ê²½ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+        System.out.print("í˜„ì¬ ë¹„ë°€ ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_pw = scanner.nextLine();
 
         if (account_pw.equals("")) {
-            System.out.println("ºñ¹Ğ ¹øÈ£°¡ º¯°æµÇÁö ¾Ê½À´Ï´Ù.");
+            System.out.println("ë¹„ë°€ ë²ˆí˜¸ê°€ ë³€ê²½ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
             return;
         }
 
-        // ºñ¹Ğ¹øÈ£ Æ²¸®¸é º¯°æ ºÒ°¡
+        // ë¹„ë°€ë²ˆí˜¸ í‹€ë¦¬ë©´ ë³€ê²½ ë¶ˆê°€
         if (!loginInfo.getPw().equals(account_pw)) {
-            System.out.println("ºñ¹Ğ ¹øÈ£°¡ Æ²·È½À´Ï´Ù.");
+            System.out.println("ë¹„ë°€ ë²ˆí˜¸ê°€ í‹€ë ¸ìŠµë‹ˆë‹¤.");
             return;
         }
 
-        System.out.print("»õ ºñ¹Ğ ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("ìƒˆ ë¹„ë°€ ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String new_pw = scanner.nextLine();
-        System.out.print("ÇÑ ¹ø ´õ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.print("í•œ ë²ˆ ë” ì…ë ¥í•˜ì„¸ìš”: ");
         String new_pw2 = scanner.nextLine();
 
         if (!new_pw.equals(new_pw2)) {
-            System.out.println("ºñ¹Ğ ¹øÈ£°¡ ´Ù¸¨´Ï´Ù.");
+            System.out.println("ë¹„ë°€ ë²ˆí˜¸ê°€ ë‹¤ë¦…ë‹ˆë‹¤.");
             return;
         }
 
@@ -393,21 +393,21 @@ public class Main {
             System.out.println(res + " row updated.");
             loginInfo.setPw(new_pw);
 
-            System.out.println("ºñ¹Ğ ¹øÈ£ ¼öÁ¤ÀÌ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+            System.out.println("ë¹„ë°€ ë²ˆí˜¸ ìˆ˜ì •ì´ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
             conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
-            System.err.println("ºñ¹Ğ ¹øÈ£ ¼öÁ¤ Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.");
+            System.err.println("ë¹„ë°€ ë²ˆí˜¸ ìˆ˜ì • ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.");
         }
     }
 
     public static void deleteAccount(){
-        System.out.println("È¸¿ø¿¡¼­ Å»ÅğÇÕ´Ï´Ù. ÀÔ·ÂÇÏÁö ¾ÊÀ¸¸é º¯°æµÇÁö ¾Ê½À´Ï´Ù.");
-        System.out.print("ºñ¹Ğ ¹øÈ£¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+        System.out.println("íšŒì›ì—ì„œ íƒˆí‡´í•©ë‹ˆë‹¤. ì…ë ¥í•˜ì§€ ì•Šìœ¼ë©´ ë³€ê²½ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
+        System.out.print("ë¹„ë°€ ë²ˆí˜¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
         String account_pw = scanner.nextLine();
 
         if (account_pw.equals("") || !loginInfo.getPw().equals(account_pw)) {
-            System.out.println("Å»Åğ°¡ Ãë¼ÒµÇ¾ú½À´Ï´Ù.");
+            System.out.println("íƒˆí‡´ê°€ ì·¨ì†Œë˜ì—ˆìŠµë‹ˆë‹¤.");
             return;
         }
 
@@ -422,11 +422,11 @@ public class Main {
             res = stmt.executeUpdate(sql);
             System.out.println(res + " row updated.");
 
-            System.out.println("È¸¿ø Å»Åğ°¡ ¿Ï·áµÇ¾ú½À´Ï´Ù.");
+            System.out.println("íšŒì› íƒˆí‡´ê°€ ì™„ë£Œë˜ì—ˆìŠµë‹ˆë‹¤.");
             conn.commit();
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("È¸¿ø Å»Åğ Áß ¿À·ù°¡ ¹ß»ıÇß½À´Ï´Ù.");
+            System.err.println("íšŒì› íƒˆí‡´ ì¤‘ ì˜¤ë¥˜ê°€ ë°œìƒí–ˆìŠµë‹ˆë‹¤.");
         }
 
         logout();
