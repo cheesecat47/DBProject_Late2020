@@ -1,9 +1,5 @@
 package phase3;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -20,7 +16,7 @@ public class Main {
     public static Statement stmt = null;
     public static String sql = "";
     public static ResultSet rs = null;
-    public static LoginInfo loginInfo = new LoginInfo();
+    public static AccountInfo accountInfo;
 
 
     public static void main(String[] args) {
@@ -54,7 +50,7 @@ public class Main {
                 case "B":
                 case "b":
                     logIn();
-                    if (loginInfo.isStatus()) {
+                    if (accountInfo.isStatus()) {
                         after_login();
                     } else {
                         System.out.println("로그인에 실패했습니다.");
@@ -120,8 +116,8 @@ public class Main {
     }
 
 
-    public static boolean checkBdayFormat(String bday) {
-        // 생년월일 포맷 검사
+    public static boolean checkDateFormat(String bday) {
+        // Date 형식 포맷 검사
         // https://coding-factory.tistory.com/529
         String bday_pattern = "^\\d{4}-\\d{2}-\\d{2}$";
         return Pattern.matches(bday_pattern, bday);
@@ -169,7 +165,7 @@ public class Main {
         }
 
         // 생년월일 포맷 검사
-        if (!checkBdayFormat(account_bday)) {
+        if (!checkDateFormat(account_bday)) {
             System.out.println("생년월일을 형식에 맞게 입력해주세요.");
             return;
         }
@@ -232,57 +228,97 @@ public class Main {
         String account_pw = scanner.nextLine();
 
         try {
-            sql = "select account_id, account_pw from account "
+            sql = "select * from account "
                     + "where account_id = '" + account_id
                     + "' and account_pw = '" + account_pw + "'";
 //			System.out.println("sql: " + sql);
 
             rs = stmt.executeQuery(sql);
             if (rs.next()) {
-                String rs1 = rs.getString(1);
-                String rs2 = rs.getString(2);
-//                System.out.printf("ID: %s, PW: %s\n", rs1, rs2);
-                loginInfo.setStatus(true);
-                loginInfo.setId(rs1);
-                loginInfo.setPw(rs2);
+                accountInfo = new AccountInfo(true,
+                        rs.getString(1),
+                        rs.getString(2),
+                        rs.getString(3),
+                        rs.getString(4),
+                        rs.getString(5),
+                        rs.getString(6),
+                        rs.getString(7),
+                        rs.getString(8),
+                        rs.getString(9),
+                        rs.getString(10)
+                );
                 return;
             }
             System.out.println("아이디 또는 비밀번호가 틀렸습니다.");
-            loginInfo.setStatus(false);
+            accountInfo.setStatus(false);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public static void logout() {
-        loginInfo = null;
+        accountInfo.setStatus(false);
+        accountInfo = null;
     }
 
     public static void after_login() {
         System.out.println("로그인에 성공했습니다.");
         System.out.println();
 
-        while (loginInfo != null && loginInfo.isStatus()) {
-            System.out.println("-------------------- ID: " + loginInfo.getId() + " --------------------");
-            System.out.println("A: 회원 관련 기능 / B: 영상물 관련 기능 / 기타: 로그 아웃");
+        while (accountInfo != null && accountInfo.isStatus()) {
+            System.out.println("-------------------- ID: " + accountInfo.getId() + " --------------------");
+            if (accountInfo.getIdentity().equals("customer")){
+                System.out.println("A: 회원 관련 기능 / B: 영상물 관련 기능 / C: 평가 관련 기능 / 기타: 로그 아웃");
+            } else if (accountInfo.getIdentity().equals("manager")){
+                System.out.println("A: 회원 관련 기능 / B: 영상물 관련 기능 / C: 평가 관련 기능 / D: 관리자 기능 / 기타: 로그 아웃");
+            }
             System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
 
             String op = scanner.nextLine();
             System.out.println();
-            switch (op) {
-                case "A":
-                case "a":
-                    accountFeatures();
-                    break;
-                case "B":
-                case "b":
-                    movieFeatures();
-                    break;
-                default:
-                    System.out.println("로그아웃 합니다.");
-                    logout();
-                    return;
-            } // end switch
+            if (accountInfo.getIdentity().equals("customer")){
+                switch (op) {
+                    case "A":
+                    case "a":
+                        accountFeatures();
+                        break;
+                    case "B":
+                    case "b":
+                        movieFeatures();
+                        break;
+                    case "C":
+                    case "c":
+                        rateFeatures();
+                        break;
+                    default:
+                        System.out.println("로그아웃 합니다.");
+                        logout();
+                        return;
+                } // end customer switch
+            } else if (accountInfo.getIdentity().equals("manager")) {
+                switch (op) {
+                    case "A":
+                    case "a":
+                        accountFeatures();
+                        break;
+                    case "B":
+                    case "b":
+                        movieFeatures();
+                        break;
+                    case "C":
+                    case "c":
+                        rateFeatures();
+                        break;
+                    case "D":
+                    case "d":
+                        adminFeatures();
+                        break;
+                    default:
+                        System.out.println("로그아웃 합니다.");
+                        logout();
+                        return;
+                } // end manager switch
+            }
             System.out.println();
         } // end while
     }
@@ -290,8 +326,8 @@ public class Main {
     public static void accountFeatures(){
         System.out.println();
 
-        while (loginInfo != null && loginInfo.isStatus()) {
-            System.out.println("-------------------- 회원 관련 기능 --------------------");
+        while (accountInfo != null && accountInfo.isStatus()) {
+            System.out.println("-------------------- ID: " + accountInfo.getId() + " / 회원 관련 기능 --------------------");
             System.out.println("A: 회원 번호 수정 / B: 비밀 번호 수정 / C: 회원 탈퇴 / 기타: 뒤로 가기");
             System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
 
@@ -323,7 +359,7 @@ public class Main {
         System.out.print("비밀번호를 입력하세요: ");
         String account_pw = scanner.nextLine();
         // 비밀번호 틀리면 변경 불가
-        if (!loginInfo.getPw().equals(account_pw)) {
+        if (!accountInfo.getPw().equals(account_pw)) {
             System.out.println("비밀번호가 틀렸습니다.");
             return;
         }
@@ -341,7 +377,7 @@ public class Main {
         String account_bday = scanner.nextLine();
         if (!account_bday.equals("")) {
             // 생년월일 입력했는데 포맷 안 맞으면 변경 불가
-            if (!checkBdayFormat(account_bday)) {
+            if (!checkDateFormat(account_bday)) {
                 System.out.println("생년월일을 형식에 맞게 입력해주세요.");
                 return;
             }
@@ -381,7 +417,7 @@ public class Main {
         String toBeUpdatedStr = String.join(", ", toBeUpdated);
 //        System.out.println("toBeUpdatedStr: " + toBeUpdatedStr);
         sql += toBeUpdatedStr
-                + " where account_id = '" + loginInfo.getId() + "'";
+                + " where account_id = '" + accountInfo.getId() + "'";
         System.out.println("sql: " + sql);
         
         try {
@@ -406,7 +442,7 @@ public class Main {
         }
 
         // 비밀번호 틀리면 변경 불가
-        if (!loginInfo.getPw().equals(account_pw)) {
+        if (!accountInfo.getPw().equals(account_pw)) {
             System.out.println("비밀 번호가 틀렸습니다.");
             return;
         }
@@ -423,10 +459,10 @@ public class Main {
 
         try {
             sql = "update account set account_pw = '" + new_pw
-                    + "' where account_id = '" + loginInfo.getId() + "'";
+                    + "' where account_id = '" + accountInfo.getId() + "'";
             int res = stmt.executeUpdate(sql);
             System.out.println(res + " row updated.");
-            loginInfo.setPw(new_pw);
+            accountInfo.setPw(new_pw);
 
             System.out.println("비밀 번호 수정이 완료되었습니다.");
             conn.commit();
@@ -441,19 +477,19 @@ public class Main {
         System.out.print("비밀 번호를 입력하세요: ");
         String account_pw = scanner.nextLine();
 
-        if (account_pw.equals("") || !loginInfo.getPw().equals(account_pw)) {
+        if (account_pw.equals("") || !accountInfo.getPw().equals(account_pw)) {
             System.out.println("탈퇴가 취소되었습니다.");
             return;
         }
 
         try {
             sql = "delete from write_rate where account_id = '"
-                + loginInfo.getId() + "'";
+                + accountInfo.getId() + "'";
             int res = stmt.executeUpdate(sql);
             System.out.println(res + " row updated.");
 
             sql = "delete from account where account_id = '"
-                    + loginInfo.getId() + "'";
+                    + accountInfo.getId() + "'";
             res = stmt.executeUpdate(sql);
             System.out.println(res + " row updated.");
 
@@ -470,8 +506,8 @@ public class Main {
     public static void movieFeatures(){
         System.out.println();
 
-        while (loginInfo != null && loginInfo.isStatus()) {
-            System.out.println("-------------------- 영상물 관련 기능 --------------------");
+        while (accountInfo != null && accountInfo.isStatus()) {
+            System.out.println("-------------------- ID: " + accountInfo.getId() + " / 영상물 관련 기능 --------------------");
             System.out.println("A: 전체 영상물 확인 / B: 영상물 제목 검색 / C: 영상물 조건 검색 / 기타: 뒤로 가기");
             System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
 
@@ -509,7 +545,7 @@ public class Main {
             sql = "select movie_register_no, movie_title from movie" +
                     " where movie_register_no not in (" +
                     " select movie_register_no from write_rate" +
-                    " where account_id = '" + loginInfo.getId() + "'" +
+                    " where account_id = '" + accountInfo.getId() + "'" +
                     ") order by movie_register_no";
 //            System.out.println("sql: " + sql);
             rs = stmt.executeQuery(sql);
@@ -525,9 +561,9 @@ public class Main {
             rs.beforeFirst();
 
             while (rs.next()) {
-                String rs1 = rs.getString(1);
+                int rs1 = rs.getInt(1);
                 String rs2 = rs.getString(2);
-                System.out.printf("등록번호: %s / 제목: %s\n", rs1, rs2);
+                System.out.printf("등록번호: %d / 제목: %s\n", rs1, rs2);
             }
             System.out.println();
             System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
@@ -553,7 +589,7 @@ public class Main {
                     " where movie_title like '%" + movie_title + "%'" +
                     " and movie_register_no not in (" +
                     " select movie_register_no from write_rate" +
-                    " where account_id = '" + loginInfo.getId() + "'" +
+                    " where account_id = '" + accountInfo.getId() + "'" +
                     ") order by movie_register_no";
 //            System.out.println("sql: " + sql);
             rs = stmt.executeQuery(sql);
@@ -568,9 +604,9 @@ public class Main {
             rs.beforeFirst();
 
             while (rs.next()) {
-                String rs1 = rs.getString(1);
+                int rs1 = rs.getInt(1);
                 String rs2 = rs.getString(2);
-                System.out.printf("등록번호: %s / 제목: %s\n", rs1, rs2);
+                System.out.printf("등록번호: %d / 제목: %s\n", rs1, rs2);
             }
             System.out.println();
             System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
@@ -593,19 +629,19 @@ public class Main {
                     " where m.movie_register_no = c.movie_register_no" +
                     " and m.movie_register_no = v.movie_register_no";
 
-            System.out.print("종류를 입력하세요(KnuMovieDB Original, Movie, TV Series): ");
+            System.out.print("종류를 입력하세요(" + getAllKind("movie_type", "movie") + "): ");
             String movie_type = scanner.nextLine();
             if (!movie_type.equals("")) {
                 sql += " and m.movie_type = '" + movie_type + "'";
             }
 
-            System.out.print("장르를 입력하세요(Action, Comedy, Romance, Drama, Thriller): ");
+            System.out.print("장르를 입력하세요(" + getAllKind("genre_name", "genre") + "): ");
             String genre_name = scanner.nextLine();
             if (!genre_name.equals("")) {
                 sql += " and c.genre_name = '" + genre_name + "'";
             }
 
-            System.out.print("상영 국가를 입력하세요(US, KR, IT): ");
+            System.out.print("상영 국가를 입력하세요(" + getAllKind("version_country", "version") + "): ");
             String version_country = scanner.nextLine();
             if (!version_country.equals("")) {
                 sql += " and v.version_country = '" + version_country + "'";
@@ -613,9 +649,9 @@ public class Main {
 
             sql += " and m.movie_register_no not in (" +
                     " select movie_register_no from write_rate" +
-                    " where account_id = '" + loginInfo.getId() + "'" +
+                    " where account_id = '" + accountInfo.getId() + "'" +
                     ") order by m.movie_register_no";
-//            System.out.println("sql: " + sql);
+            System.out.println("sql: " + sql);
 
             rs = stmt.executeQuery(sql);
 
@@ -629,11 +665,11 @@ public class Main {
             rs.beforeFirst();
 
             while (rs.next()) {
-                String rs1 = rs.getString(1);
+                int rs1 = rs.getInt(1);
                 String rs2 = rs.getString(2);
                 String rs3 = rs.getString(3);
                 String rs4 = rs.getString(4);
-                System.out.printf("등록번호: %s / 제목: %s / 국가: %s / 버전명: %s\n", rs1, rs2, rs3, rs4);
+                System.out.printf("등록번호: %d / 제목: %s / 국가: %s / 버전명: %s\n", rs1, rs2, rs3, rs4);
             }
             System.out.println();
             System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
@@ -656,20 +692,19 @@ public class Main {
                 searchMovieDetail(searched);
                 break;
             default:
-                return;
         }
     }
 
     public static void searchMovieDetail(ResultSet searched){
         try {
             System.out.print("세부 정보를 보고 싶은 영상물의 등록번호를 입력해주세요: ");
-            String movie_register_no = scanner.nextLine();
+            int movie_register_no = Integer.parseInt(scanner.nextLine());
 
             searched.beforeFirst();
             boolean isRegNoInResult = false;
             while (searched.next()) {
-                String rs1 = rs.getString(1);
-                if (rs1.equals(movie_register_no)) {
+                int rs1 = rs.getInt(1);
+                if (rs1 == movie_register_no) {
                     isRegNoInResult = true;
                     break;
                 }
@@ -690,7 +725,7 @@ public class Main {
             rs = stmt.executeQuery(sql);
 
             if (rs.next()) {
-                String rs1 = rs.getString(1);
+                int rs1 = rs.getInt(1);
                 String rs2 = rs.getString(2);
                 String rs3 = rs.getString(3);
                 String rs4 = rs.getString(4);
@@ -726,5 +761,237 @@ public class Main {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
         }
+    }
+
+    public static void rateFeatures(){
+        System.out.println();
+
+        while (accountInfo != null && accountInfo.isStatus()) {
+            System.out.println("-------------------- ID: " + accountInfo.getId() + " / 평가 관련 기능 --------------------");
+            if (accountInfo.getIdentity().equals("customer")) {
+                System.out.println("A: 나의 평가 내역 확인 / 기타: 뒤로 가기");
+            } else if (accountInfo.getIdentity().equals("manager")) {
+                System.out.println("A: 나의 평가 내역 확인 / B: 모든 평가 내역 확인 / 기타: 뒤로 가기");
+            }
+
+            System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
+            String op = scanner.nextLine();
+            System.out.println();
+
+            if (accountInfo.getIdentity().equals("customer")) {
+                switch (op) {
+                    case "A":
+                    case "a":
+                        viewMyRatings();
+                        break;
+                    default:
+                        System.out.println("이전 메뉴로 돌아갑니다.");
+                        return;
+                } // end customer switch
+            } else if (accountInfo.getIdentity().equals("manager")) {
+                switch (op) {
+                    case "A":
+                    case "a":
+                        viewMyRatings();
+                        break;
+                    case "B":
+                    case "b":
+                        viewAllRatings();
+                        break;
+                    default:
+                        System.out.println("이전 메뉴로 돌아갑니다.");
+                        return;
+                } // end manager switch
+            }
+            System.out.println();
+        } // end while
+    }
+
+    public static void viewMyRatings(){
+        System.out.println("나의 평가 내역입니다.");
+
+        try {
+            sql = "select m.movie_title, r.rating_score, r.rating_description" +
+                    " from movie m, rating r, write_rate w" +
+                    " where m.movie_register_no = w.movie_register_no and r.rating_no = w.rating_no" +
+                    " and w.account_id = '" + accountInfo.getId() + "'";
+//            System.out.println("sql: " + sql);
+            rs = stmt.executeQuery(sql);
+
+            rs.last();
+            int rowCount = rs.getRow();
+            if (rowCount == 0){
+                System.out.println("검색된 평가 내역이 없습니다.");
+                System.out.println();
+                return;
+            }
+            rs.beforeFirst();
+
+            while (rs.next()) {
+                String rs1 = rs.getString(1);
+                float rs2 = rs.getFloat(2);
+                String rs3 = rs.getString(3);
+                System.out.printf("제목: %s / 평점: %f / 내용: %s\n", rs1, rs2, rs3);
+            }
+            System.out.println();
+            System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
+            System.out.println();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("평가 내역 검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    public static void viewAllRatings(){
+        System.out.println("모든 평가 내역입니다.");
+
+        try {
+            sql = "select w.account_id, m.movie_title, r.rating_score, r.rating_description" +
+                    " from movie m, rating r, write_rate w" +
+                    " where m.movie_register_no = w.movie_register_no and r.rating_no = w.rating_no";
+//            System.out.println("sql: " + sql);
+            rs = stmt.executeQuery(sql);
+
+            rs.last();
+            int rowCount = rs.getRow();
+            if (rowCount == 0){
+                System.out.println("검색된 평가 내역이 없습니다.");
+                System.out.println();
+                return;
+            }
+            rs.beforeFirst();
+
+            while (rs.next()) {
+                String rs1 = rs.getString(1);
+                String rs2 = rs.getString(2);
+                float rs3 = rs.getFloat(3);
+                String rs4 = rs.getString(4);
+                System.out.printf("평가자: %s / 제목: %s / 평점: %f / 내용: %s\n", rs1, rs2, rs3, rs4);
+            }
+            System.out.println();
+            System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
+            System.out.println();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("평가 내역 검색 중 오류가 발생했습니다.");
+        }
+    }
+
+    public static void adminFeatures(){
+        System.out.println();
+
+        while (accountInfo != null && accountInfo.isStatus()) {
+            System.out.println("-------------------- ID: " + accountInfo.getId() + " / 관리자 기능 --------------------");
+            System.out.println("A: 나의 평가 내역 확인 / B: 모든 평가 내역 확인 / 기타: 뒤로 가기");
+
+            System.out.print("메뉴를 선택하세요(대소문자 모두 가능) >> ");
+            String op = scanner.nextLine();
+            System.out.println();
+
+            switch (op) {
+                case "A":
+                case "a":
+                    addNewMovieInfo();
+                    break;
+//                case "B":
+//                case "b":
+//                    modifyMovieInfo();
+//                    break;
+                default:
+                    System.out.println("이전 메뉴로 돌아갑니다.");
+                    return;
+            } // end customer switch
+            System.out.println();
+        } // end while
+    }
+
+    public static void addNewMovieInfo() {
+        System.out.println("새로운 영상물 등록");
+
+        System.out.println("* 표시는 필수 입력 사항입니다.");
+        System.out.print("* 영상물 제목을 입력하세요: ");
+        String movie_title = scanner.nextLine();
+        System.out.print("* 영상물 종류를 입력하세요: ");
+        String movie_type = scanner.nextLine();
+        System.out.print("* 상영 시간을 입력하세요(단위: 분): ");
+        String movie_runtime = scanner.nextLine();
+        System.out.print("상영 년도를 입력하세요(yyyy-mm-dd): ");
+        String movie_start_year = scanner.nextLine();
+
+        System.out.print("* 장르를 입력하세요(" + getAllKind("genre_name", "genre") + "): ");
+        String genre_name = scanner.nextLine();
+
+        System.out.println("버전 정보를 입력 받습니다.");
+        System.out.print("상영 국가를 입력하세요(" + getAllKind("version_country", "version") + "): ");
+        String version_country = scanner.nextLine();
+        System.out.print("해당 버전의 이름을 입력하세요: ");
+        String version_name = scanner.nextLine();
+
+        if (movie_type.equals("TV Series")) {
+            System.out.print("* 에피소드 이름을 입력하세요: ");
+            String episode_name = scanner.nextLine();
+        }
+
+        // 필수 항목 검사
+        if (movie_title.equals("") || movie_type.equals("")
+                || movie_runtime.equals("") || genre_name.equals("")) {
+            System.out.println("필수 항목을 입력하지 않았습니다.");
+            return;
+        }
+
+        // 상영 년도 포맷 검사
+        if (!checkDateFormat(movie_start_year)) {
+            System.out.println("상영 년도를 형식에 맞게 입력해주세요.");
+            return;
+        }
+
+//        // 필수 아닌 항목 입력을 안 했으면 "null"이라는 문자열로 바꾸기
+//        if (account_address.equals("")) {
+//            account_address = "null";
+//        }
+//        if (account_job.equals("")) {
+//            account_job = "null";
+//        }
+//        System.out.println();
+//
+//        try {
+//            sql = "insert into account values ('" + account_id
+//                    + "', '" + account_pw + "', '" + account_name
+//                    + "', TO_DATE('" + account_bday + "', 'yyyy-mm-dd'), '"
+//                    + account_sex + "', '" + account_address + "', '"
+//                    + account_phone + "', 'customer', '" + account_job
+//                    + "', 'Basic')";
+////			System.out.println("sql: " + sql);
+//
+//            int res = stmt.executeUpdate(sql);
+//            System.out.println(res + " row updated.");
+//            System.out.println("회원 가입이 완료되었습니다.");
+//            conn.commit();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+
+        System.out.println();
+    }
+
+    public static String getAllKind(String attr, String table) {
+        String return_str = "";
+        ArrayList<String> list = new ArrayList<>();
+        try {
+            String get_sql = "select distinct " + attr + " from " + table;
+            rs = stmt.executeQuery(get_sql);
+
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return_str = String.join(", ", list);
+        System.out.println("getAllKind: return_str: " + return_str);
+        return return_str;
     }
 }
