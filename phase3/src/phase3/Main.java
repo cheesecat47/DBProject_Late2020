@@ -1015,7 +1015,7 @@ public class Main {
 
     public static void changeMovieInfo() {
         System.out.println("등록된 영상물 정보 수정");
-        System.out.println("모든 영상물의 등록번호와 이름을 출력합니다.");
+        System.out.println("모든 영상물의 등록번호와 제목을 출력합니다.");
 
         int wantToChangeMovieNo = 0;
 
@@ -1066,7 +1066,8 @@ public class Main {
                 case "B":
                 case "b":
                     deleteMovie(wantToChangeMovieNo);
-                    break;
+                    System.out.println("이전 메뉴로 돌아갑니다.");
+                    return;
                 case "C":
                 case "c":
                     changeVersionInfo(wantToChangeMovieNo);
@@ -1124,15 +1125,8 @@ public class Main {
         System.out.print("상영 년도를 입력하세요(yyyy-mm-dd): ");
         String movie_start_year = scanner.nextLine();
 
-        // 필수 항목 검사
-        if (movie_title.equals("") || movie_type.equals("")
-                || movie_runtime.equals("") || movie_start_year.equals("")) {
-            System.out.println("필수 항목을 입력하지 않았습니다.");
-            return;
-        }
-
         // 상영 년도 포맷 검사
-        if (!checkDateFormat(movie_start_year)) {
+        if (!movie_start_year.equals("") && !checkDateFormat(movie_start_year)) {
             System.out.println("상영 년도를 형식에 맞게 입력해주세요.");
             return;
         }
@@ -1214,9 +1208,10 @@ public class Main {
 
             while (rs.next()) {
                 System.out.println("버전 정보: " + rs.getInt(1) +
-                        "버전 국가: " + rs.getString(2) +
-                        "버전 이름: " + rs.getString(3));
+                        " / 버전 국가: " + rs.getString(2) +
+                        " / 버전 이름: " + rs.getString(3));
             }
+            System.out.println();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1240,7 +1235,7 @@ public class Main {
                 case "B":
                 case "b":
                     deleteVersion(version_no);
-                    break;
+                    return;
                 default:
                     System.out.println("이전 메뉴로 돌아갑니다.");
                     return;
@@ -1274,7 +1269,7 @@ public class Main {
             System.out.println(res + " row updated.");
 
             System.out.println("버전 수정이 완료되었습니다.");
-
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1287,6 +1282,7 @@ public class Main {
             System.out.println(res + " row updated.");
 
             System.out.println("버전 삭제가 완료되었습니다.");
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1315,8 +1311,9 @@ public class Main {
 
             while (rs.next()) {
                 System.out.println("에피소드 번호: " + rs.getInt(1) +
-                        "에피소드 이름: " + rs.getString(2);
+                        " / 에피소드 이름: " + rs.getString(2));
             }
+            System.out.println();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -1340,7 +1337,7 @@ public class Main {
                 case "B":
                 case "b":
                     deleteEpisode(episode_no);
-                    break;
+                    return;
                 default:
                     System.out.println("이전 메뉴로 돌아갑니다.");
                     return;
@@ -1363,7 +1360,7 @@ public class Main {
                 System.out.println(res + " row updated.");
 
                 System.out.println("에피소드 수정이 완료되었습니다.");
-
+                conn.commit();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
@@ -1378,6 +1375,7 @@ public class Main {
             System.out.println(res + " row updated.");
 
             System.out.println("에피소드 삭제가 완료되었습니다.");
+            conn.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
