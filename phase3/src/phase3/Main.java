@@ -7,16 +7,12 @@ import java.util.regex.Pattern;
 
 
 public class Main {
-    //	public static final String URL = "jdbc:oracle:thin:@localhost:1521:orcl";
-    public static final String URL = "jdbc:oracle:thin:@localhost:1600:xe";
-    public static final String USER = "team9";
-    public static final String USER_PW = "dbteam9";
     public static Scanner scanner = null;
-    public static Connection conn = null;
-    public static Statement stmt = null;
     public static String sql = "";
     public static ResultSet rs = null;
+
     public static AccountInfo accountInfo;
+    public static DB db;
 
 
     public static void main(String[] args) {
@@ -25,15 +21,12 @@ public class Main {
         System.out.println();
 
         try {
-            Class.forName("oracle.jdbc.driver.OracleDriver");
+            db = new DB();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             System.err.println("error = " + e.getMessage());
             System.exit(1);
         }
-
-        // conn
-        connectToDB();
 
         while (true) {
             System.out.println("----------------------------------------");
@@ -58,61 +51,12 @@ public class Main {
                     break;
                 default:
                     System.out.println("프로그램을 종료합니다.");
-
                     scanner.close();
-                    // Release database resources.
-                    closeConnDB();
-
+                    db = null;
                     System.exit(0);
             } // end switch
             System.out.println();
         } // end while
-    }
-
-
-    public static void connectToDB() {
-        // conn
-        try {
-            conn = DriverManager.getConnection(URL, USER, USER_PW);
-//            System.out.println("Connected to the DB: " + conn);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.err.println("Cannot get a connection: " + e.getMessage());
-            System.exit(1);
-        }
-        System.out.println();
-
-        try {
-            conn.setAutoCommit(false);
-            stmt = conn.createStatement(
-                    ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_UPDATABLE
-            );
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void closeConnDB() {
-        try {
-            if (rs != null) {
-                rs.close();
-//                System.out.println("rs.close");
-            }
-
-            // Close the Statement object.
-            if (stmt != null) {
-                stmt.close();
-//                System.out.println("stmt.close");
-            }
-            // Close the Connection object.
-            if (conn != null) {
-                conn.close();
-//                System.out.println("conn.close");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
 
@@ -209,12 +153,16 @@ public class Main {
                     + "', 'Basic')";
 //			System.out.println("sql: " + sql);
 
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
+
             System.out.println("회원 가입이 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
 
         System.out.println();
@@ -233,7 +181,8 @@ public class Main {
                     + "' and account_pw = '" + account_pw + "'";
 //			System.out.println("sql: " + sql);
 
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
             if (rs.next()) {
                 accountInfo = new AccountInfo(true,
                         rs.getString(1),
@@ -247,12 +196,16 @@ public class Main {
                         rs.getString(9),
                         rs.getString(10)
                 );
+                rs.close();
                 return;
             }
+
             System.out.println("아이디 또는 비밀번호가 틀렸습니다.");
-            accountInfo.setStatus(false);
+            accountInfo = null;
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -422,13 +375,17 @@ public class Main {
         System.out.println("sql: " + sql);
         
         try {
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
+
             System.out.println("회원 정보 수정이 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
             System.err.println("회원 정보 수정 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -455,15 +412,18 @@ public class Main {
         try {
             sql = "update account set account_pw = '" + new_pw
                     + "' where account_id = '" + accountInfo.getId() + "'";
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
             accountInfo.setPw(new_pw);
 
             System.out.println("비밀 번호 수정이 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
             System.err.println("비밀 번호 수정 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -477,22 +437,47 @@ public class Main {
             return;
         }
 
+        // 본인이 관리자이고 다른 관리자가 없으면 탈퇴 안됨.
+        if (accountInfo.getIdentity().equals("manager")){
+            int manager_count = 0;
+            try {
+                sql = "select count(*) from account where account_identity='manager'";
+                db.connectToDB();
+                rs = db.executeQuery(sql);
+                if (rs.next()) {
+                    manager_count = rs.getInt(1);
+                }
+                rs.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                db.closeConnDB();
+            }
+
+            if (manager_count < 2) {
+                System.out.println("관리자가 본인밖에 없습니다. 탈퇴가 취소되었습니다.");
+                return;
+            }
+        }
+
         try {
             sql = "delete from write_rate where account_id = '"
                 + accountInfo.getId() + "'";
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
 
             sql = "delete from account where account_id = '"
                     + accountInfo.getId() + "'";
-            res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.executeUpdate(sql);
 
             System.out.println("회원 탈퇴가 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (Exception e) {
+            db.rollback();
             e.printStackTrace();
             System.err.println("회원 탈퇴 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
 
         logout();
@@ -533,17 +518,14 @@ public class Main {
         System.out.println("전체 영상물을 검색합니다.");
 
         try {
-            // 2.E 고려 안 한 것. 그냥 전체 쿼리.
-            // sql = "select movie_title from movie order by movie_register_no";
-
             // 2.E 고려 한 것. 해당 회원이 평가한 영상은 검색에서 제외.
             sql = "select movie_register_no, movie_title from movie" +
                     " where movie_register_no not in (" +
                     " select movie_register_no from write_rate" +
                     " where account_id = '" + accountInfo.getId() + "'" +
                     ") order by movie_register_no";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             // https://wookoa.tistory.com/111
             rs.last();
@@ -569,6 +551,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -586,8 +570,8 @@ public class Main {
                     " select movie_register_no from write_rate" +
                     " where account_id = '" + accountInfo.getId() + "'" +
                     ") order by movie_register_no";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             rs.last();
             int rowCount = rs.getRow();
@@ -612,6 +596,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -648,7 +634,8 @@ public class Main {
                     ") order by m.movie_register_no";
             System.out.println("sql: " + sql);
 
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             rs.last();
             int rowCount = rs.getRow();
@@ -675,6 +662,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -708,6 +697,7 @@ public class Main {
                 System.out.println("검색 결과 중 해당 영상물이 없습니다.");
                 return;
             }
+            searched.close();
             // 이제 검색 결과 중 특정 영상물 존재 확인. 그 세부 정보 출력.
 
             String movie_detail_info = "";
@@ -716,8 +706,8 @@ public class Main {
                     " FROM movie m, category c" +
                     " WHERE c.movie_register_no = m.movie_register_no" +
                     " and m.movie_register_no = '" + movie_register_no + "'";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             if (rs.next()) {
                 int rs1 = rs.getInt(1);
@@ -733,14 +723,14 @@ public class Main {
                 movie_detail_info += " / 상영년도: " + rs5;
                 movie_detail_info += " / 장르: " + rs6;
             }
+            rs.close();
 
             sql = "select avg(r.rating_score) as avg_rate" +
                     " FROM write_rate w, rating r" +
                     " WHERE w.rating_no = r.rating_no" +
                     " and w.movie_register_no = '" + movie_register_no + "'" +
                     " group by w.movie_register_no";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            rs = db.executeQuery(sql);
 
             if (rs.next()) {
                 String rs1 = rs.getString(1);
@@ -748,6 +738,7 @@ public class Main {
             } else {
                 movie_detail_info += " / 평균평점: '평가가 존재하지 않습니다.'";
             }
+            rs.close();
 
             System.out.println(movie_detail_info);
             System.out.println();
@@ -755,6 +746,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -810,8 +803,8 @@ public class Main {
                     " from movie m, rating r, write_rate w" +
                     " where m.movie_register_no = w.movie_register_no and r.rating_no = w.rating_no" +
                     " and w.account_id = '" + accountInfo.getId() + "'";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             rs.last();
             int rowCount = rs.getRow();
@@ -828,6 +821,8 @@ public class Main {
                 String rs3 = rs.getString(3);
                 System.out.printf("제목: %s / 평점: %f / 내용: %s\n", rs1, rs2, rs3);
             }
+            rs.close();
+
             System.out.println();
             System.out.println(rowCount + "개의 평가 내역 검색이 완료되었습니다.");
             System.out.println();
@@ -835,6 +830,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("평가 내역 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -845,8 +842,8 @@ public class Main {
             sql = "select w.account_id, m.movie_title, r.rating_score, r.rating_description" +
                     " from movie m, rating r, write_rate w" +
                     " where m.movie_register_no = w.movie_register_no and r.rating_no = w.rating_no";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             rs.last();
             int rowCount = rs.getRow();
@@ -864,6 +861,8 @@ public class Main {
                 String rs4 = rs.getString(4);
                 System.out.printf("평가자: %s / 제목: %s / 평점: %f / 내용: %s\n", rs1, rs2, rs3, rs4);
             }
+            rs.close();
+
             System.out.println();
             System.out.println(rowCount + "개의 평가 내역 검색이 완료되었습니다.");
             System.out.println();
@@ -871,6 +870,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("평가 내역 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -959,6 +960,8 @@ public class Main {
         
         // 새 영상물 등록
         int this_movie_id = getMaxIdNo("movie_register_no", "movie") + 1;
+        int max_version_no = getMaxIdNo("version_identification_no", "version") + 1;
+        int max_episode_no = getMaxIdNo("episode_no", "episode") + 1;
         
         try {
             sql = "insert into movie values (" 
@@ -967,19 +970,17 @@ public class Main {
                     + ", TO_DATE('" + movie_start_year + "', 'yyyy-mm-dd'))";
 			System.out.println("sql: " + sql);
 
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
 
             sql = "insert into category values ('" + genre_name +
                     "', " + this_movie_id + ")";
             System.out.println("sql: " + sql);
 
-            res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.executeUpdate(sql);
 
             System.out.println("영상물 등록이 완료되었습니다.");
 
-            int max_version_no = getMaxIdNo("version_identification_no", "version") + 1;
             for (ArrayList<String> arr : version_list) {
                 sql = "insert into version values (" + max_version_no +
                         ", '" + arr.get(0) +
@@ -987,27 +988,28 @@ public class Main {
                         "', " + this_movie_id + ")";
                 System.out.println("sql: " + sql);
 
-                res = stmt.executeUpdate(sql);
-                System.out.println(res + " row updated.");
+                db.executeUpdate(sql);
                 max_version_no += 1;
             }
             System.out.println("버전 등록이 완료되었습니다.");
 
             if (movie_type.equals("TV Series") && !episode_name.equals("")) {
-                int max_episode_no = getMaxIdNo("episode_no", "episode") + 1;
                 sql = "insert into episode values (" + max_episode_no +
                         ", '" + episode_name +
                         "', " + this_movie_id + ")";
                 System.out.println("sql: " + sql);
 
-                res = stmt.executeUpdate(sql);
-                System.out.println(res + " row updated.");
+                db.executeUpdate(sql);
+
                 System.out.println("에피소드 등록이 완료되었습니다.");
             }
 
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
 
         System.out.println();
@@ -1020,9 +1022,9 @@ public class Main {
         int wantToChangeMovieNo = 0;
 
         try {
-             sql = "select movie_register_no, movie_title from movie order by movie_register_no";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            sql = "select movie_register_no, movie_title from movie order by movie_register_no";
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             rs.last();
             int rowCount = rs.getRow();
@@ -1038,6 +1040,8 @@ public class Main {
                 String rs2 = rs.getString(2);
                 System.out.printf("등록번호: %d / 제목: %s\n", rs1, rs2);
             }
+            rs.close();
+
             System.out.println();
             System.out.println(rowCount + "개의 영상물 검색이 완료되었습니다.");
             System.out.println();
@@ -1048,6 +1052,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
 
         while (accountInfo != null && accountInfo.isStatus()) {
@@ -1094,8 +1100,8 @@ public class Main {
                     " FROM movie m, category c" +
                     " WHERE c.movie_register_no = m.movie_register_no" +
                     " and m.movie_register_no = '" + no + "'";
-//            System.out.println("sql: " + sql);
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             if (rs.next()) {
                 movie_detail_info += "등록번호: " + rs.getInt(1);
@@ -1105,6 +1111,7 @@ public class Main {
                 movie_detail_info += " / 상영년도: " + rs.getString(5);
                 movie_detail_info += " / 장르: " + rs.getString(6);
             }
+            rs.close();
 
             System.out.println(movie_detail_info);
             System.out.println();
@@ -1112,6 +1119,8 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("영상물 검색 중 오류가 발생했습니다.");
+        } finally {
+            db.closeConnDB();
         }
 
         ArrayList<String> change_list = new ArrayList<>();
@@ -1150,51 +1159,52 @@ public class Main {
             sql += " where movie_register_no=" + no;
             System.out.println("sql: " + sql);
 
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
 
             System.out.println("영상물 수정이 완료되었습니다.");
 
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
     }
 
     public static void deleteMovie(int no) {
         try {
+            ArrayList<String> batch = new ArrayList<>();
             sql = "delete from episode where movie_register_no=" + no;
-            System.out.println("sql: " + sql);
-            stmt.addBatch(sql);
+            batch.add(sql);
 
             sql = "delete from version where movie_register_no=" + no;
-            System.out.println("sql: " + sql);
-            stmt.addBatch(sql);
+            batch.add(sql);
 
             sql = "delete from category where movie_register_no=" + no;
-            System.out.println("sql: " + sql);
-            stmt.addBatch(sql);
+            batch.add(sql);
 
             sql = "delete from appearance where movie_register_no=" + no;
-            System.out.println("sql: " + sql);
-            stmt.addBatch(sql);
+            batch.add(sql);
 
             sql = "delete from write_rate where movie_register_no=" + no;
-            System.out.println("sql: " + sql);
-            stmt.addBatch(sql);
+            batch.add(sql);
 
             sql = "delete from movie where movie_register_no=" + no;
-            System.out.println("sql: " + sql);
-            stmt.addBatch(sql);
+            batch.add(sql);
 
-            int[] count = stmt.executeBatch();
-            System.out.println(count.length + " row updated.");
+            db.connectToDB();
+            db.executeBatch(batch);
 
             System.out.println("영상물 삭제가 완료되었습니다.");
 
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -1204,16 +1214,21 @@ public class Main {
             sql = "select version_identification_no, version_country, version_name" +
                     " from version where movie_register_no=" + no +
                     " order by version_identification_no";
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             while (rs.next()) {
                 System.out.println("버전 정보: " + rs.getInt(1) +
                         " / 버전 국가: " + rs.getString(2) +
                         " / 버전 이름: " + rs.getString(3));
             }
+            rs.close();
+
             System.out.println();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
 
         System.out.print("정보를 수정/삭제할 버전 번호를 입력하세요: ");
@@ -1265,26 +1280,32 @@ public class Main {
             sql = "update version set ";
             sql += String.join(", ", change_list);
             sql += " where version_identification_no=" + no;
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
 
             System.out.println("버전 수정이 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
     }
 
     public static void deleteVersion(int no) {
         try {
             sql = "delete from version where version_identification_no=" + no;
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
 
             System.out.println("버전 삭제가 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
     }
 
@@ -1292,14 +1313,18 @@ public class Main {
         try {
             sql = "select movie_type" +
                     " from movie where movie_register_no=" + no;
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             if (rs.next() && !rs.getString(1).equals("TV Series")) {
                 System.out.println("TV Series가 아니어서 에피소드 정보가 없습니다.");
+                rs.close();
                 return;
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
 
         System.out.println("해당 영상물의 에피소드 등록번호와 이름을 출력합니다.");
@@ -1307,15 +1332,20 @@ public class Main {
             sql = "select episode_no, episode_name" +
                     " from episode where movie_register_no=" + no +
                     " order by episode_no";
-            rs = stmt.executeQuery(sql);
+            db.connectToDB();
+            rs = db.executeQuery(sql);
 
             while (rs.next()) {
                 System.out.println("에피소드 번호: " + rs.getInt(1) +
                         " / 에피소드 이름: " + rs.getString(2));
             }
+            rs.close();
+
             System.out.println();
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
 
         System.out.print("정보를 수정/삭제할 에피소드 번호를 입력하세요: ");
@@ -1356,13 +1386,16 @@ public class Main {
             try {
                 sql = "update episode set episode_name='" + episode_name + "'" +
                         " where episode_no=" + no;
-                int res = stmt.executeUpdate(sql);
-                System.out.println(res + " row updated.");
+                db.connectToDB();
+                db.executeUpdate(sql);
 
                 System.out.println("에피소드 수정이 완료되었습니다.");
-                conn.commit();
+                db.commit();
             } catch (SQLException e) {
+                db.rollback();
                 e.printStackTrace();
+            } finally {
+                db.closeConnDB();
             }
         }
 
@@ -1371,30 +1404,38 @@ public class Main {
     public static void deleteEpisode(int no) {
         try {
             sql = "delete from episode where episode_no=" + no;
-            int res = stmt.executeUpdate(sql);
-            System.out.println(res + " row updated.");
+            db.connectToDB();
+            db.executeUpdate(sql);
 
             System.out.println("에피소드 삭제가 완료되었습니다.");
-            conn.commit();
+            db.commit();
         } catch (SQLException e) {
+            db.rollback();
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
     }
 
     public static String getAllKind(String attr, String table) {
-        String return_str = "";
+        String return_str;
         ArrayList<String> list = new ArrayList<>();
         try {
             String get_sql = "select distinct " + attr + " from " + table;
-            rs = stmt.executeQuery(get_sql);
+            db.connectToDB();
+            rs = db.executeQuery(get_sql);
 
             while (rs.next()) {
                 list.add(rs.getString(1));
             }
+            rs.close();
 
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
+
         return_str = String.join(", ", list);
 //        System.out.println("getAllKind: return_str: " + return_str);
         return return_str;
@@ -1404,14 +1445,20 @@ public class Main {
         int res = 0;
         try {
             String get_sql = "select max(" + attr + ") from " + table;
-            rs = stmt.executeQuery(get_sql);
+            db.connectToDB();
+            rs = db.executeQuery(get_sql);
 
             if (rs.next()) {
                 res = rs.getInt(1);
             }
+            rs.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            db.closeConnDB();
         }
+
 //        System.out.println("getMaxIdNo: res: " + res);
         return res;
     }
